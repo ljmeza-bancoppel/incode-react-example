@@ -1,17 +1,11 @@
 import { create } from "@incodetech/welcome";
 const apiURL = process.env.REACT_APP_USER_SERVER;
-const clientId = process.env.REACT_APP_CLIENT_ID;
+const apiKey = process.env.REACT_APP_API_KEY;
 
 const incode = create({
-  clientId: clientId,
+  apiKey: apiKey,
   apiURL: apiURL,
-  theme: {
-    // main: "",
-    // mainButton: {
-    //   borderRadius: "",
-    //   color: "",
-    //   border: "",
-    // },
-  },
+  lang: 'es',
+  encrypt: true,
 });
 export default incode;

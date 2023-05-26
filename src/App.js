@@ -9,96 +9,16 @@ import arrowDown from "./imgs/arrow-down.svg";
 import icons from "./imgs/icons.svg";
 import threeDots from "./imgs/three-dots.svg";
 
-function FrontId({ session, onSuccess, onError }) {
-  const containerRef = useRef();
-  const isMounted = useRef(false);
+import Welcome from "./Components/Welcome";
+import FrontId from "./Components/FrontId";
+import BackId from "./Components/BackId";
+import ProcessId from "./Components/ProcessId";
+import Selfie from "./Components/Selfie";
+import RetrySteps from "./Components/RetrySteps";
+import FaceMatch from "./Components/FaceMatch";
+import PhoneNumberInput from "./Components/PhoneNumberInput";
 
-  useEffect(() => {
-    if (isMounted.current) {
-      return;
-    }
-    incode.renderCamera("front", containerRef.current, {
-      onSuccess,
-      onError: onError,
-      token: session,
-      numberOfTries: -1,
-      showTutorial: true,
-    });
-
-    isMounted.current = true;
-  }, [onSuccess, onError, session]);
-
-  return <div ref={containerRef}></div>;
-}
-
-function BackId({ session, onSuccess, onError }) {
-  const containerRef = useRef();
-  const isMounted = useRef(false);
-
-  useEffect(() => {
-    if (isMounted.current) {
-      return;
-    }
-    incode.renderCamera("back", containerRef.current, {
-      onSuccess,
-      onError: onError,
-      token: session,
-      numberOfTries: -1,
-      showTutorial: true,
-    });
-
-    isMounted.current = true;
-  }, [onSuccess, onError, session]);
-
-  return <div ref={containerRef}></div>;
-}
-
-function ProcessId({ session, onSuccess }) {
-  useEffect(() => {
-    incode.processId({ token: session.token }).then(() => {
-      onSuccess();
-    });
-  }, [onSuccess, session]);
-
-  return <p>Processing...</p>;
-}
-
-function Selfie({ session, onSuccess, onError }) {
-  const containerRef = useRef();
-  const isMounted = useRef(false);
-
-  useEffect(() => {
-    if (isMounted.current) {
-      return false;
-    }
-    incode.renderCamera("selfie", containerRef.current, {
-      onSuccess,
-      onError: onError,
-      token: session,
-      numberOfTries: 3,
-      showTutorial: true,
-    });
-    isMounted.current = true;
-  }, [onSuccess, onError, session]);
-
-  return <div ref={containerRef}></div>;
-}
-
-function FaceMatch({ session, onSuccess, onError, liveness, userExists }) {
-  const containerRef = useRef();
-
-  useEffect(() => {
-    incode.renderFaceMatch(containerRef.current, {
-      onSuccess,
-      onError,
-      token: session,
-      liveness,
-      userExists,
-    });
-  }, [onSuccess, onError, session, liveness, userExists]);
-
-  return <div ref={containerRef}></div>;
-}
+const configurationId = process.env.REACT_APP_CONFIGURATION_ID;
 
 // Use Conference if you need it
 // eslint-disable-next-line no-unused-vars
@@ -237,31 +157,6 @@ function ResetPermissions({ onTryAgain }) {
   );
 }
 
-function RetrySteps({ session, onSuccess, onError, numberOfTries }) {
-  const containerRef = useRef();
-  const isMounted = useRef(false);
-
-  useEffect(() => {
-    if (isMounted.current) {
-      return;
-    }
-    incode.renderRetrySteps(
-      containerRef.current,
-      {
-        token: session,
-        numberOfTries,
-      },
-      {
-        onSuccess,
-        onError,
-      }
-    );
-    isMounted.current = true;
-  }, [onSuccess, onError, session, numberOfTries]);
-
-  return <div ref={containerRef}></div>;
-}
-
 export function useQuery() {
   return useMemo(() => new URLSearchParams(window.location.search), []);
 }
@@ -278,8 +173,10 @@ export default function App() {
   const queryParams = useQuery();
 
   useEffect(() => {
-    const flowId = queryParams.get("flowId");
-
+    let flowId = queryParams.get("flowId");
+    if (!flowId) {
+      flowId = configurationId;
+    }
     incode
       .createSession("ALL", null, {
         configurationId: flowId,
@@ -314,6 +211,7 @@ export default function App() {
   if (error) return "Error!";
   return (
     <Steps currentStep={step}>
+      <Welcome session={session} onSuccess={goNext} onError={handleError} params={queryParams} />
       <FrontId session={session} onSuccess={goNext} onError={handleError} />
       <BackId session={session} onSuccess={goNext} onError={handleError} />
       <ProcessId session={session} onSuccess={goNext} />
@@ -332,6 +230,7 @@ export default function App() {
         liveness={liveness}
         userExists={userExists}
       />
+      <PhoneNumberInput session={session} onSuccess={goNext} />
       <RetrySteps
         session={session}
         numberOfTries={3}

@@ -43,6 +43,7 @@ and then write the correct variables (Ask support for help)
 ### Start the app
 
 ```
+export NODE_OPTIONS=--openssl-legacy-provider
 yarn start
 ```
 
